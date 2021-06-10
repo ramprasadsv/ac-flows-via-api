@@ -301,7 +301,7 @@ def getPromptId (primary, searchId, target) {
     def tl = jsonParse(target)
     String fName = ""
     String rId = ""
-    println "Searching for userId : $userId"
+    println "Searching for promptId : $searchId"
     for(int i = 0; i < pl.PromptSummaryList.size(); i++){
         def obj = pl.PromptSummaryList[i]    
         if (obj.Arn.equals(searchId)) {
