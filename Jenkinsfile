@@ -127,7 +127,7 @@ pipeline {
                                 } else if(obj.Parameters.Type.equals('ConnectParticipantWithLexBot')) {
                                     //handle lex box
                                     
-                                } else if(obj.Parameters.equals('UpdateContactTargetQueue')) {
+                                } else if(obj.Parameters.Type.equals('UpdateContactTargetQueue')) {
                                     //handle queues
                                     arn = getQueueId (PRIMARYQC, obj.Parameters.QueueId, TARGETQC)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
