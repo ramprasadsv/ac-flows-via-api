@@ -280,7 +280,7 @@ def getHOPId (primary, hopId, target) {
         def obj = pl.HoursOfOperationSummaryList[i]    
         if (obj.Arn.equals(hopId)) {
             fName = obj.Name
-            println "Found user name : $fName"
+            println "Found name : $fName"
             break
         }
     }
@@ -289,7 +289,7 @@ def getHOPId (primary, hopId, target) {
         def obj = tl.HoursOfOperationSummaryList[i]    
         if (obj.Username.equals(fName)) {
             rId = obj.Arn
-            println "Found flow id : $rId"
+            println "Found id : $rId"
             break
         }
     }
@@ -306,16 +306,16 @@ def getPromptId (primary, searchId, target) {
         def obj = pl.PromptSummaryList[i]    
         if (obj.Arn.equals(searchId)) {
             fName = obj.Name
-            println "Found user name : $fName"
+            println "Found name : $fName"
             break
         }
     }
-    println "Searching for hopId for : $fName"        
+    println "Searching for prompt for : $fName"        
     for(int i = 0; i < tl.PromptSummaryList.size(); i++){
         def obj = tl.PromptSummaryList[i]    
-        if (obj.Username.equals(fName)) {
+        if (obj.Name.equals(fName)) {
             rId = obj.Arn
-            println "Found flow id : $rId"
+            println "Found id : $rId"
             break
         }
     }
