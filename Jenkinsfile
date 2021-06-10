@@ -155,7 +155,8 @@ pipeline {
                                     echo "No handling for ${obj.Parameters}"
                                 }
                             }
-                            
+                            String json = toJSON(TARGETJSON)
+                            TARGETJSON = json.toString()
                      }
                 }
             }
