@@ -14,6 +14,18 @@ String FLOWID = ""
 String TRAGETINSTANCEARN = ""
 String TARGETFLOWID = ""
 String TARGETJSON = ""
+String PRIMARYQC = ""
+String TARGETQC = ""
+String PRIMARYQUEUES = ""
+String TARGETQUEUES = ""
+String PRIMARYUSERS = ""
+String TARGETUSERS = ""
+String PRIMARYCFS = ""
+String TARGETCFS = ""
+String PRIMARYHOP = ""
+String TARGETHOP = ""
+String PRIMARYPROMPTS = ""
+String TARGETPROMPTS = ""
 
 pipeline {
     agent any
@@ -43,14 +55,54 @@ pipeline {
                         echo params                      
                         def instanceMapping = jsonParse(params)
                         INSTANCEARN = instanceMapping.primaryInstance
-                        FLOWID = instanceMapping.flowId
+                        //FLOWID = instanceMapping.flowId
                         TRAGETINSTANCEARN = instanceMapping.targetInstance
-                        TARGETFLOWID = instanceMapping.targetFlowId
+                        //TARGETFLOWID = instanceMapping.targetFlowId
                     }
                 }
             }
         }
-      
+        stage('read all resources') {
+            steps {
+                echo 'Reading all the resources for ARN resolution'
+                withAWS(credentials: '71b568ab-3ca8-4178-b03f-c112f0fd5030', region: 'us-east-1') {
+                    script {
+                        PRIMARYUSERS =  sh(script: "aws connect list-users --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYUSERS
+                        TARGETUSERS =  sh(script: "aws connect  list-users --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETUSERS
+                        
+                        PRIMARYQUEUES =  sh(script: "aws connect list-queues --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYQUEUES
+                        TARGETQUEUES =  sh(script: "aws connect list-queues --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETQUEUES
+                        
+                        PRIMARYQC =  sh(script: "aws connect list-quick-connects --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYQC
+                        TARGETQC =  sh(script: "aws connect list-quick-connects --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETQC 
+                        
+                        PRIMARYCFS =  sh(script: "aws connect list-contact-flows --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYCFS
+                        TARGETCFS =  sh(script: "aws connect list-contact-flows --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETCFS
+                        
+                        PRIMARYHOP = sh(script: "aws connect list-hours-of-operations --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYHOP
+                        TARGETHOP = sh(script: "aws connect list-hours-of-operations --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETHOP
+
+                        PRIMARYPROMPTS = sh(script: "aws connect list-prompts --instance-id ${INSTANCEARN}", returnStdout: true).trim()
+                        echo PRIMARYPROMPTS
+                        TARGETPROMPTS = sh(script: "aws connect list-prompts --instance-id ${TRAGETINSTANCEARN}", returnStdout: true).trim()
+                        echo TARGETPROMPTS
+                    }
+                }
+            }
+            
+        }
+        
+        
         stage('read flow from api') {
             steps {
                     echo 'Reading the contact flow content via api'
@@ -58,15 +110,41 @@ pipeline {
                         script {
                             def di =  sh(script: "aws connect describe-contact-flow --instance-id ${INSTANCEARN} --contact-flow-id ${FLOWID}", returnStdout: true).trim()
                             echo di
-                            def data2 = sh(script: 'cat arnmapping.json', returnStdout: true).trim()    
                             def flow = jsonParse(di)
-                            def arnmapping = jsonParse(data2)
-                            String content = flow.ContactFlow.Content    
-                            for(i = 0; i < arnmapping.size(); i++){
-                                content = content.replaceAll(arnmapping[i].sourceARN, arnmapping[i].targetARN)
+                            def content = flow.ContactFlow.Content    
+                            def flow = getFlowId(PRIMARYCFS, flow.Arn,TARGETCFS).split("/")
+                            TARGETFLOWID = flow[3]
+                            echo "Need to update flowId : ${TARGETFLOWID}"
+                            for(int i =0; i < content.Actions.size(); i++ )
+                            {
+                                def obj = content.Actions[i]
+                                if(obj.Parameters.equals('MessageParticipant')) {
+                                    //handle prompts 
+                                    
+                                } else if(obj.Parameters.equals('ConnectParticipantWithLexBot')) {
+                                    //handle lex box
+                                    
+                                } else if(obj.Parameters.equals('UpdateContactTargetQueue')) {
+                                    //handle queues
+                                    
+                                } else if(obj.Parameters.equals('UpdateContactEventHooks')) {
+                                    //handle flows
+                                    
+                                } else if(obj.Parameters.equals('InvokeLambdaFunction')) {
+                                    //handle lambda
+                                    
+                                } else if(obj.Parameters.equals('TransferToFlow')) {
+                                    //handle flows
+                                    
+                                } else if(obj.Parameters.equals('CheckHoursOfOperation')) {
+                                    //handle hours of operation
+                                    
+                                } else {
+                                    //handle any other resource
+                                    echo "No handling for ${obj.Parameters}"
+                                }
                             }
-                            String json = toJSON(content)
-                            TARGETJSON = json.toString()
+                            
                      }
                 }
             }
@@ -87,3 +165,136 @@ pipeline {
         
     }
 }
+
+
+def getFlowId (primary, flowId, target) {
+    def pl = jsonParse(primary)
+    def tl = jsonParse(target)
+    String fName = ""
+    String rId = ""
+    println "Searching for flowId : $flowId"
+    for(int i = 0; i < pl.ContactFlowSummaryList.size(); i++){
+        def obj = pl.ContactFlowSummaryList[i]    
+        if (obj.Arn.equals(flowId)) {
+            fName = obj.Name
+            println "Found flow name : $fName"
+            break
+        }
+    }
+    println "Searching for flow name : $fName"        
+    for(int i = 0; i < tl.ContactFlowSummaryList.size(); i++){
+        def obj = tl.ContactFlowSummaryList[i]    
+        if (obj.Name.equals(fName)) {
+            rId = obj.Arn
+            println "Found flow id : $rId"
+            break
+        }
+    }
+    return rId
+}
+
+def getQueueId (primary, queueId, target) {
+    def pl = jsonParse(primary)
+    def tl = jsonParse(target)
+    String fName = ""
+    String rId = ""
+    println "Searching for queueId : $queueId"
+    for(int i = 0; i < pl.QueueSummaryList.size(); i++){
+        def obj = pl.QueueSummaryList[i]    
+        if (obj.Arn.equals(queueId)) {
+            fName = obj.Name
+            println "Found queue name : $fName"
+            break
+        }
+    }
+            
+    for(int i = 0; i < tl.QueueSummaryList.size(); i++){
+        def obj = tl.QueueSummaryList[i]    
+        if (obj.Name.equals(fName)) {
+            rId = obj.Arn
+            println "Found flow id : $rId"
+            break
+        }
+    }
+    return rId
+    
+}
+
+def getUserId (primary, userId, target) {
+    def pl = jsonParse(primary)
+    def tl = jsonParse(target)
+    String fName = ""
+    String rId = ""
+    println "Searching for userId : $userId"
+    for(int i = 0; i < pl.UserSummaryList.size(); i++){
+        def obj = pl.UserSummaryList[i]    
+        if (obj.Arn.equals(userId)) {
+            fName = obj.Username
+            println "Found user name : $fName"
+            break
+        }
+    }
+    println "Searching for userId for : $fName"        
+    for(int i = 0; i < tl.UserSummaryList.size(); i++){
+        def obj = tl.UserSummaryList[i]    
+        if (obj.Username.equals(fName)) {
+            rId = obj.Arn
+            println "Found flow id : $rId"
+            break
+        }
+    }
+    return rId    
+}
+
+def getHOP (primary, hopId, target) {
+    def pl = jsonParse(primary)
+    def tl = jsonParse(target)
+    String fName = ""
+    String rId = ""
+    println "Searching for userId : $userId"
+    for(int i = 0; i < pl.HoursOfOperationSummaryList.size(); i++){
+        def obj = pl.HoursOfOperationSummaryList[i]    
+        if (obj.Arn.equals(hopId)) {
+            fName = obj.Name
+            println "Found user name : $fName"
+            break
+        }
+    }
+    println "Searching for hopId for : $fName"        
+    for(int i = 0; i < tl.HoursOfOperationSummaryList.size(); i++){
+        def obj = tl.HoursOfOperationSummaryList[i]    
+        if (obj.Username.equals(fName)) {
+            rId = obj.Arn
+            println "Found flow id : $rId"
+            break
+        }
+    }
+    return rId    
+}
+
+def getPrompt (primary, searchId, target) {
+    def pl = jsonParse(primary)
+    def tl = jsonParse(target)
+    String fName = ""
+    String rId = ""
+    println "Searching for userId : $userId"
+    for(int i = 0; i < pl.PromptSummaryList.size(); i++){
+        def obj = pl.PromptSummaryList[i]    
+        if (obj.Arn.equals(searchId)) {
+            fName = obj.Name
+            println "Found user name : $fName"
+            break
+        }
+    }
+    println "Searching for hopId for : $fName"        
+    for(int i = 0; i < tl.PromptSummaryList.size(); i++){
+        def obj = tl.PromptSummaryList[i]    
+        if (obj.Username.equals(fName)) {
+            rId = obj.Arn
+            println "Found flow id : $rId"
+            break
+        }
+    }
+    return rId    
+}
+
