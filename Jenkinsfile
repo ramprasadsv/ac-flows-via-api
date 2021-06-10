@@ -129,7 +129,7 @@ pipeline {
                                     
                                 } else if(obj.Type.equals('UpdateContactTargetQueue')) {
                                     //handle queues
-                                    arn = getQueueId (PRIMARYQC, obj.Parameters.QueueId, TARGETQC)
+                                    arn = getQueueId (PRIMARYQUEUES, obj.Parameters.QueueId, TARGETQUEUES)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
                                     
                                 } else if(obj.Type.equals('UpdateContactEventHooks')) {
