@@ -120,11 +120,11 @@ pipeline {
                             for(int i =0; i < content.Actions.size(); i++ )
                             {
                                 def obj = content.Actions[i]
-                                if(obj.Parameters.equals('MessageParticipant')) {
+                                if(obj.Parameters.Type.equals('MessageParticipant')) {
                                     //handle prompts
                                     arn = getPromptId (PRIMARYPROMPTS, obj.Parameters.PromptId, TARGETPROMPTS)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.PromptId, arn)
-                                } else if(obj.Parameters.equals('ConnectParticipantWithLexBot')) {
+                                } else if(obj.Parameters.Type.equals('ConnectParticipantWithLexBot')) {
                                     //handle lex box
                                     
                                 } else if(obj.Parameters.equals('UpdateContactTargetQueue')) {
@@ -132,20 +132,20 @@ pipeline {
                                     arn = getQueueId (PRIMARYQC, obj.Parameters.QueueId, TARGETQC)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
                                     
-                                } else if(obj.Parameters.equals('UpdateContactEventHooks')) {
+                                } else if(obj.Parameters.Type.equals('UpdateContactEventHooks')) {
                                     //handle flows
                                     arn = getFlowId (PRIMARYCFS, obj.Parameters.QueueId, TARGETCFS)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
                                     
-                                } else if(obj.Parameters.equals('InvokeLambdaFunction')) {
+                                } else if(obj.Parameters.Type.equals('InvokeLambdaFunction')) {
                                     //handle lambda
                                     
-                                } else if(obj.Parameters.equals('TransferToFlow')) {
+                                } else if(obj.Parameters.Type.equals('TransferToFlow')) {
                                     //handle flows
                                     arn = getFlowId (PRIMARYCFS, obj.Parameters.QueueId, TARGETCFS)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
                                     
-                                } else if(obj.Parameters.equals('CheckHoursOfOperation')) {
+                                } else if(obj.Parameters.Type.equals('CheckHoursOfOperation')) {
                                     //handle hours of operation
                                     arn = getHOPId (PRIMARYHOP, obj.Parameters.QueueId, TARGETHOP)
                                     TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
