@@ -55,7 +55,7 @@ pipeline {
                         echo params                      
                         def instanceMapping = jsonParse(params)
                         INSTANCEARN = instanceMapping.primaryInstance
-                        //FLOWID = instanceMapping.flowId
+                        FLOWID = instanceMapping.flowId
                         TRAGETINSTANCEARN = instanceMapping.targetInstance
                         //TARGETFLOWID = instanceMapping.targetFlowId
                     }
