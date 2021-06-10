@@ -156,6 +156,7 @@ pipeline {
                                 }
                             }
                             String json = toJSON(TARGETJSON)
+                            json = toJSON(json)
                             TARGETJSON = json.toString()
                      }
                 }
