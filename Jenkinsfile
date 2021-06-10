@@ -134,21 +134,32 @@ pipeline {
                                     
                                 } else if(obj.Type.equals('UpdateContactEventHooks')) {
                                     //handle flows
-                                    arn = getFlowId (PRIMARYCFS, obj.Parameters.QueueId, TARGETCFS)
-                                    TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
+                                    
+                                    if(obj.Parameters.EventHooks.AgentWhisper){                                        
+                                        arn = getFlowId (PRIMARYCFS, obj.Parameters.EventHooks.AgentWhisper, TARGETCFS)
+                                        TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.EventHooks.AgentWhisper, arn)
+                                    } else if(obj.Parameters.EventHooks.CustomerQueue){
+                                        arn = getFlowId (PRIMARYCFS, obj.Parameters.EventHooks.CustomerQueue, TARGETCFS)
+                                        TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.EventHooks.CustomerQueue, arn)
+                                    } else if(obj.Parameters.EventHooks.CustomerRemaining){
+                                        arn = getFlowId (PRIMARYCFS, obj.Parameters.EventHooks.CustomerRemaining, TARGETCFS)
+                                        TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.EventHooks.CustomerRemaining, arn)
+                                    }
+                                    
+                                    
                                     
                                 } else if(obj.Type.equals('InvokeLambdaFunction')) {
                                     //handle lambda
                                     
                                 } else if(obj.Type.equals('TransferToFlow')) {
                                     //handle flows
-                                    arn = getFlowId (PRIMARYCFS, obj.Parameters.QueueId, TARGETCFS)
-                                    TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
+                                    arn = getFlowId (PRIMARYCFS, obj.Parameters.ContactFlowId, TARGETCFS)
+                                    TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.ContactFlowId, arn)
                                     
                                 } else if(obj.Type.equals('CheckHoursOfOperation')) {
                                     //handle hours of operation
-                                    arn = getHOPId (PRIMARYHOP, obj.Parameters.QueueId, TARGETHOP)
-                                    TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.QueueId, arn)
+                                    arn = getHOPId (PRIMARYHOP, obj.Parameters.HoursOfOperationId, TARGETHOP)
+                                    TARGETJSON = TARGETJSON.replaceAll(obj.Parameters.HoursOfOperationId, arn)
                                     
                                 } else {
                                     //handle any other resource
@@ -264,7 +275,7 @@ def getHOPId (primary, hopId, target) {
     def tl = jsonParse(target)
     String fName = ""
     String rId = ""
-    println "Searching for userId : $userId"
+    println "Searching for hopId : $hopId"
     for(int i = 0; i < pl.HoursOfOperationSummaryList.size(); i++){
         def obj = pl.HoursOfOperationSummaryList[i]    
         if (obj.Arn.equals(hopId)) {
