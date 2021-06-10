@@ -111,7 +111,7 @@ pipeline {
                             def di =  sh(script: "aws connect describe-contact-flow --instance-id ${INSTANCEARN} --contact-flow-id ${FLOWID}", returnStdout: true).trim()
                             echo di
                             def flow = jsonParse(di)
-                            def content = flow.ContactFlow.Content    
+                            def content = jsonParse(flow.ContactFlow.Content)
                             TARGETJSON = flow.ContactFlow.Content    
                             def flowId = getFlowId(PRIMARYCFS, flow.ContactFlow.Arn,TARGETCFS).split("/")
                             TARGETFLOWID = flowId[3]
