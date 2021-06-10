@@ -167,7 +167,7 @@ pipeline {
                                 }
                             }
                             String json = toJSON(TARGETJSON)
-                            json = toJSON(json)
+                            //json = toJSON(json)
                             TARGETJSON = json.toString()
                      }
                 }
