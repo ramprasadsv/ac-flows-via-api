@@ -25,7 +25,7 @@ pipeline {
                 try{
                   sh(script: "rm -r ac-flows-via-api", returnStdout: true)
                 }catch(Exception e){
-                  println ("Exception occured " + e.toString()
+                  println ("Exception occured " + e.toString())
                 }
                 sh(script: "git clone https://github.com/ramprasadsv/ac-flows-via-api.git", returnStdout: true)
                 sh(script: "ls -ltr", returnStatus: true)
@@ -73,7 +73,7 @@ pipeline {
         }
 
                            
-        stage('deploy flow after arn resolution') {
+        stage('publish flow after arn resolution') {
             steps {
                 echo "deploy flow content "
                 withAWS(credentials: '71b568ab-3ca8-4178-b03f-c112f0fd5030', region: 'us-east-1') {
