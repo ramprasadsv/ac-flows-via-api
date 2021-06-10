@@ -53,6 +53,7 @@ pipeline {
                             def di =  sh(script: "aws connect describe-contact-flow --instance-id ${INSTANCEARN} --contact-flow-id ${FLOWID}", returnStdout: true).trim()
                             echo di
                             def data2 = sh(script: 'cat arnmapping.json', returnStdout: true).trim()    
+                            echo data2
                             def flow = jsonParse(di)
                             def arnmapping = jsonParse(data2)
                             String content = flow.ContactFlow.Content    
