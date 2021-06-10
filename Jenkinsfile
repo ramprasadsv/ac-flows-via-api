@@ -68,7 +68,7 @@ pipeline {
         
         stage('deploy updated flow after api') {
             steps {
-                echo "Updating contact flow after reading from api "
+                echo "public contact flow using api "
                 withAWS(credentials: '71b568ab-3ca8-4178-b03f-c112f0fd5030', region: 'us-east-1') {
                     script {
                         def di =  sh(script: "aws connect update-contact-flow-content --instance-id ${TRAGETINSTANCEARN} --contact-flow-id ${TARGETFLOWID2} --content ${TARGETJSON}", returnStdout: true).trim()
