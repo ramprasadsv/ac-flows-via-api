@@ -113,7 +113,7 @@ pipeline {
                             def flow = jsonParse(di)
                             def content = flow.ContactFlow.Content    
                             TARGETJSON = flow.ContactFlow.Content    
-                            def flowId = getFlowId(PRIMARYCFS, flow.Arn,TARGETCFS).split("/")
+                            def flowId = getFlowId(PRIMARYCFS, flow.ContactFlow.Arn,TARGETCFS).split("/")
                             TARGETFLOWID = flowId[3]
                             String arn = ""
                             echo "Need to update flowId : ${TARGETFLOWID}"
